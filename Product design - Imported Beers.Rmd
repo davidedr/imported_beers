@@ -1,0 +1,96 @@
+---
+title: 'Product design: Imported beers'
+author: "D"
+date: "17 agosto 2016"
+output: html_document
+---
+
+See bottom of document for credits.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+mirror = 'http://cran.us.r-project.org'
+setwd("C:/Nuova cartella/Udemy Modelling Customers' Choices/Imported Beers")
+
+```
+
+```{r}
+if (!require(knitr)) {
+    install.packages("knitr", repos = mirror, dependencies = TRUE)
+    require(knitr)
+    library(knitr)
+}
+
+if (!require(conjoint)) {
+    install.packages("conjoint", repos = mirror, dependencies = TRUE)
+    require(conjoint)
+    library(conjoint)
+}
+
+```
+
+Product features are defined by seven factors ("origin", "Price", ...) each with 3 values ("levels")
+```{r}
+factors_list <- list(
+  
+  Origin = c("European", "Canadian", "Japanese"),
+  Price = c("6.19","5.49","4.79"),
+  Body = c("Rich full bodied","Regular","Crisp and clear"),
+  Aftertaste = c("strong","mild", "very mild"),
+  Calories = c("full", "regular", "low"),
+  Packaging = c("Six 12Oz Large", "Six 12Oz Small",   "Four 16Oz"),
+  Glass = c("Green Label",    "Brown Label",  "Brown Painted")  
+  
+)
+print(factors_list)
+kable(as.data.frame(factors_list))
+
+```
+
+This builds a data frame with all combinations of the factor values. Each is called "profile" and represents a (possibly illegal) product configuration.
+```{r}
+profiles <- expand.grid(factors_list)
+str(profiles)
+```
+
+Number of profiles is clearly overwhelming, even for a small number of factors and factor levels. In our case, we have the following factors and number of levels:
+```{r}
+lengths_vector = sapply(factors_list, function (l) length(l))
+lengths_data_frame = as.data.frame(lengths_vector)
+names(lengths_data_frame) = c("Num. of Levels")
+kable(lengths_data_frame)
+
+```
+
+This totals up to $`r prod(lengths_vector)`$ number of profiles. As a matter of fact, expand.grid function, whose size is: $`r dim(profiles)`$ gave us all of them:
+```{r}
+head(profiles)
+kable (as.data.frame(profiles))
+
+```
+
+```{r}
+design<-caFactorialDesign(data = profiles, type = "fractional", cards = 21)
+str(design)
+head(design)
+
+```
+
+Factor levels' descriptions are loaded from a file:
+```{r}
+levels = read.csv("levels.csv")
+print(levels)
+
+```
+
+Eventually we get the answers from respondents:
+```{r}
+answers <- read.csv("preferences.csv")
+str(answers)
+head(answers)
+
+```
+
+CREDITS
+Analytics Vidhya (www.analyticsvidhya.com) for data and procedures.
